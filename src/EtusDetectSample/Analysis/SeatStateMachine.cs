@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Analysis
+namespace Etoos.DetectSample.Analysis
 {
     /// <summary>
     /// 프레임 단위 <see cref="EyeDecision"/> 을 시간축 좌석 상태로 바꾸는 상태머신.
@@ -74,7 +74,6 @@ namespace Etus.DetectSample.Analysis
         private double _observedSec;      // 리셋 이후 실제로 관측한 시간(PERCLOS 준비 판단용)
         private bool _faceLost;
         private bool _slumpSuspected;
-        private bool _blinkCandidate;
 
         // --- PERCLOS 러닝 합 ---
         private double _perclosClosedSec;
@@ -198,7 +197,6 @@ namespace Etus.DetectSample.Analysis
                     // 얼굴 유실 진입 프레임
                     _faceLost = true;
                     _noFaceSec = 0.0;
-                    _blinkCandidate = false;
 
                     // [엎드림 휴리스틱] 사라지기 직전에 이미 눈을 감고 있었다면
                     // 이석이 아니라 책상에 엎드린 것으로 본다. ClosedEyeSec 은 얼린다.
@@ -230,7 +228,6 @@ namespace Etus.DetectSample.Analysis
                 {
                     // 품질 게이트 탈락. ClosedEyeSec / NoFaceSec 을 얼린다(누적 금지).
                     _unknownSec += dt;
-                    _blinkCandidate = false;   // Unknown 이 끼면 blink 시퀀스는 무효
                 }
                 else
                 {
@@ -241,7 +238,6 @@ namespace Etus.DetectSample.Analysis
                         if (_prevEyeState == EyeState.Open)
                         {
                             // Open → Closed : 새 감김 구간 시작
-                            _blinkCandidate = true;
                             _closedEyeSec = 0.0;
                         }
                         _closedEyeSec += dt;
@@ -249,15 +245,6 @@ namespace Etus.DetectSample.Analysis
                     }
                     else // EyeState.Open
                     {
-                        if (_prevEyeState == EyeState.Closed && _blinkCandidate)
-                        {
-                            // Open → Closed → Open 완성. 감김 지속이 blink 범위면 깜빡임으로 센다.
-                            // 범위보다 길면 blink 가 아니라 closure(졸음 신호)이므로 세지 않는다.
-                            double closedMs = _closedEyeSec * 1000.0;
-                            if (closedMs >= _settings.BlinkMinMs && closedMs <= _settings.BlinkMaxMs)
-                                stats.BlinkCount++;
-                        }
-                        _blinkCandidate = false;
                         _closedEyeSec = 0.0;
                         AddPerclosSample(now, dt, false);
                     }
@@ -338,7 +325,6 @@ namespace Etus.DetectSample.Analysis
             snap.UnknownSec = stats.UnknownSec;
             snap.DrowsyCount = stats.DrowsyCount;
             snap.AwayCount = stats.AwayCount;
-            snap.BlinkCount = stats.BlinkCount;
             snap.Fps = CurrentFps();
             snapshot = snap;
 
@@ -372,7 +358,6 @@ namespace Etus.DetectSample.Analysis
             _observedSec = 0.0;
             _faceLost = false;
             _slumpSuspected = false;
-            _blinkCandidate = false;
 
             _perclosWindow.Clear();
             _perclosClosedSec = 0.0;
@@ -516,7 +501,6 @@ namespace Etus.DetectSample.Analysis
             ss.UnknownSec = stats.UnknownSec;
             ss.DrowsyCount = stats.DrowsyCount;
             ss.AwayCount = stats.AwayCount;
-            ss.BlinkCount = stats.BlinkCount;
             e.Session = ss;
 
             sink.Add(e);

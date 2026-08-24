@@ -1,11 +1,11 @@
 using System;
 using System.Globalization;
 
-namespace Etus.DetectSample.Config
+namespace Etoos.DetectSample.Config
 {
     /// <summary>
     /// 판정 임계값 전체. App.config(appSettings)에서 읽고, 없으면 아래 기본값을 쓴다.
-    /// 배포된 EtusDetectSample.exe.config 를 편집하면 재빌드 없이 현장 재보정이 가능하다.
+    /// 배포된 EtoosDetectSample.exe.config 를 편집하면 재빌드 없이 현장 재보정이 가능하다.
     ///
     /// 이 타입은 Analysis 계층이 참조하므로 외부 의존을 두지 않는다.
     /// (App.config 읽기는 FromConfiguration() 한 곳에서만 System.Configuration 을 쓴다)
@@ -20,9 +20,12 @@ namespace Etus.DetectSample.Config
         public double EyelidClosedThreshold = 2.4;
 
         // --- 게이트 ---
-        public double LandmarkConfMin = 0.90;
-        public double OcclusionMax = 0.50;
-        public double FineOcclusionMax = 0.50;
+        /// <summary>[잠정치, 2026-08-24 완화] 0.90(SDK 근접 셀피 기준) → 0.75. 현장 "판정불가" 과다 이슈 대응.</summary>
+        public double LandmarkConfMin = 0.75;
+        /// <summary>[잠정치, 2026-08-24 완화] 0.50 → 0.60.</summary>
+        public double OcclusionMax = 0.60;
+        /// <summary>[잠정치, 2026-08-24 완화] 0.50 → 0.60(OcclusionMax 와 동일 방향).</summary>
+        public double FineOcclusionMax = 0.60;
         /// <summary>
         /// FineOcclusion 을 게이트에 반영할지.
         /// 값의 방향은 확인됨 — <b>가려질수록 값이 높아진다</b>(Occlusion 과 동일).
@@ -30,7 +33,9 @@ namespace Etus.DetectSample.Config
         /// FaceEngine 이 FineOcclusionAvailable=false 로 내리면 이 설정과 무관하게 무시된다.
         /// </summary>
         public bool UseFineOcclusionGate = true;
-        public double PoseYawMaxDeg = 35.0;
+        /// <summary>[잠정치, 2026-08-24 완화] 35.0 → 45.0. 고개 좌우 회전이 "판정불가"의 주 원인으로 추정되어 가장 크게 완화.</summary>
+        public double PoseYawMaxDeg = 45.0;
+        /// <summary>[잠정치] 엎드림 감지 휴리스틱과 상충할 수 있어 유지 — 현장에서 설정 UI로 재보정할 것.</summary>
         public double PosePitchMaxDeg = 25.0;
 
         // --- 시간 임계 (초) ---
@@ -38,16 +43,13 @@ namespace Etus.DetectSample.Config
         public double ClosedEyeConfirmSec = 5.0;   // FASMH-94 명시
         public double NoFaceSuspectSec = 2.0;
         public double NoFaceConfirmSec = 5.0;      // FASMH-94 명시
-        public double UnknownGraceSec = 1.5;
+        /// <summary>[잠정치, 2026-08-24 완화] 1.5 → 3.0(5초 통일 상한 이내). 짧은 시선 이탈이 즉시 "판정불가"로 뜨지 않도록.</summary>
+        public double UnknownGraceSec = 3.0;
         public double AlertCooldownSec = 15.0;
 
         // --- PERCLOS ---
         public double PerclosWindowSec = 60.0;
         public double PerclosSuspectRatio = 0.35;
-
-        // --- Blink ---
-        public double BlinkMinMs = 60.0;
-        public double BlinkMaxMs = 500.0;
 
         // --- 엎드림 휴리스틱 ---
         public bool EnableSlumpHeuristic = true;
@@ -94,10 +96,10 @@ namespace Etus.DetectSample.Config
         public void Clamp()
         {
             EyelidClosedThreshold = ClampD(EyelidClosedThreshold, 0.1, 50.0, 2.4);
-            LandmarkConfMin = ClampD(LandmarkConfMin, 0.0, 1.0, 0.90);
-            OcclusionMax = ClampD(OcclusionMax, 0.0, 1.0, 0.50);
-            FineOcclusionMax = ClampD(FineOcclusionMax, 0.0, 1.0, 0.50);
-            PoseYawMaxDeg = ClampD(PoseYawMaxDeg, 5.0, 90.0, 35.0);
+            LandmarkConfMin = ClampD(LandmarkConfMin, 0.0, 1.0, 0.75);
+            OcclusionMax = ClampD(OcclusionMax, 0.0, 1.0, 0.60);
+            FineOcclusionMax = ClampD(FineOcclusionMax, 0.0, 1.0, 0.60);
+            PoseYawMaxDeg = ClampD(PoseYawMaxDeg, 5.0, 90.0, 45.0);
             PosePitchMaxDeg = ClampD(PosePitchMaxDeg, 5.0, 90.0, 25.0);
 
             ClosedEyeSuspectSec = ClampD(ClosedEyeSuspectSec, 0.2, 60.0, 2.0);
@@ -110,13 +112,10 @@ namespace Etus.DetectSample.Config
             if (NoFaceConfirmSec <= NoFaceSuspectSec)
                 NoFaceConfirmSec = NoFaceSuspectSec + 0.1;
 
-            UnknownGraceSec = ClampD(UnknownGraceSec, 0.0, 30.0, 1.5);
+            UnknownGraceSec = ClampD(UnknownGraceSec, 0.0, 30.0, 3.0);
             AlertCooldownSec = ClampD(AlertCooldownSec, 0.0, 600.0, 15.0);
             PerclosWindowSec = ClampD(PerclosWindowSec, 5.0, 600.0, 60.0);
             PerclosSuspectRatio = ClampD(PerclosSuspectRatio, 0.0, 1.0, 0.35);
-            BlinkMinMs = ClampD(BlinkMinMs, 10.0, 2000.0, 60.0);
-            BlinkMaxMs = ClampD(BlinkMaxMs, 20.0, 5000.0, 500.0);
-            if (BlinkMaxMs <= BlinkMinMs) BlinkMaxMs = BlinkMinMs + 10.0;
 
             FrameGapResetSec = ClampD(FrameGapResetSec, 0.1, 30.0, 1.0);
 

@@ -23,8 +23,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Etus.DetectSample.Tests</RootNamespace>
-    <AssemblyName>EtusDetectSample.Tests</AssemblyName>
+    <RootNamespace>Etoos.DetectSample.Tests</RootNamespace>
+    <AssemblyName>EtoosDetectSample.Tests</AssemblyName>
     <!-- 개발 PC 에 .NET 8 런타임이 없고 10 만 있어도 테스트 호스트가 실행되게 한다. -->
     <RollForward>Major</RollForward>
   </PropertyGroup>

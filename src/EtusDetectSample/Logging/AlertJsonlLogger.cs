@@ -2,10 +2,10 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Logging
+namespace Etoos.DetectSample.Logging
 {
     /// <summary>
     /// 알림을 <c>alerts-yyyyMMdd.jsonl</c> 에 1줄씩 append 한다(JSON Lines).

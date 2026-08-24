@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace Etus.DetectSample.Alerts
+namespace Etoos.DetectSample.Alerts
 {
     /// <summary>
     /// <see cref="AlertEvent"/> → JSON 직렬화. <b>외부 라이브러리 없이 직접 작성</b>한다
@@ -107,8 +107,7 @@ namespace Etus.DetectSample.Alerts
                 Prop(sb, pretty, 2, "awaySec", Num(s.AwaySec, SecDigits), false);
                 Prop(sb, pretty, 2, "unknownSec", Num(s.UnknownSec, SecDigits), false);
                 Prop(sb, pretty, 2, "drowsyCount", Int(s.DrowsyCount), false);
-                Prop(sb, pretty, 2, "awayCount", Int(s.AwayCount), false);
-                Prop(sb, pretty, 2, "blinkCount", Int(s.BlinkCount), true);
+                Prop(sb, pretty, 2, "awayCount", Int(s.AwayCount), true);
                 NestedClose(sb, pretty, 1, true);
             }
 

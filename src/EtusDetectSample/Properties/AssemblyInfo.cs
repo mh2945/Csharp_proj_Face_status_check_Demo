@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("EtusDetectSample")]
+[assembly: AssemblyTitle("EtoosDetectSample")]
 [assembly: AssemblyDescription("FASMH-94 PoC — Alchera FaceSDK 기반 자습실 좌석 상태 데모")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Alchera Inc.")]
-[assembly: AssemblyProduct("EtusDetectSample")]
+[assembly: AssemblyProduct("EtoosDetectSample")]
 [assembly: AssemblyCopyright("Copyright (c) Alchera Inc.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

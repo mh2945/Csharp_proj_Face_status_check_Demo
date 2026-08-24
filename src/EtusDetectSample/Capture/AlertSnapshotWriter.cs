@@ -3,16 +3,16 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Logging
+namespace Etoos.DetectSample.Logging
 {
     /// <summary>
     /// 확정(Alert) 알림이 발생한 순간의 화면을 <c>logs/snapshots/</c> 아래에 jpg 로 남긴다.
     ///
     /// <b>파일 위치가 Logging\ 이 아니라 Capture\ 인 이유</b>: 네임스페이스는 역할에 맞춰
-    /// Logging 을 쓰지만, tests\EtusDetectSample.Tests.csproj 가 <c>Logging\*.cs</c> 를 통째로
+    /// Logging 을 쓰지만, tests\EtoosDetectSample.Tests.csproj 가 <c>Logging\*.cs</c> 를 통째로
     /// net8.0(macOS 포함 교차 플랫폼)으로 링크해서 컴파일한다(CONTRACT.md 0.3 "외부 의존 0" 검증용).
     /// 이 클래스는 System.Drawing.Bitmap(WinForms 전용)에 의존하므로 Logging\ 에 두면
     /// 그 교차 플랫폼 테스트 빌드가 깨진다. 그래서 Bitmap 을 이미 쓰는 Capture\ 에 물리적으로 둔다.

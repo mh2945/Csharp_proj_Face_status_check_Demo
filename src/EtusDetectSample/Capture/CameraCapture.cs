@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using OpenCvSharp;
 
-namespace Etus.DetectSample.Capture
+namespace Etoos.DetectSample.Capture
 {
     /// <summary>
     /// OpenCvSharp VideoCapture 래퍼 + 분석 입력 전처리 (CONTRACT.md 부록 A-7).

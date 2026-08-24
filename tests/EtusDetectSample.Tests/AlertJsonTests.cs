@@ -2,13 +2,13 @@ using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Threading;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
-using Etus.DetectSample.Tests.Support;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
+using Etoos.DetectSample.Tests.Support;
 using Xunit;
 
-namespace Etus.DetectSample.Tests
+namespace Etoos.DetectSample.Tests
 {
     /// <summary>
     /// 인포데스크 연동 payload.

@@ -6,10 +6,10 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Analysis;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Analysis;
 
-namespace Etus.DetectSample
+namespace Etoos.DetectSample
 {
     /// <summary>
     /// FASMH-94 PoC 데모 화면. 순수 View 다.
@@ -47,6 +47,7 @@ namespace Etus.DetectSample
         public event EventHandler StopRequested;
         public event EventHandler<int> CameraSelected;
         public event EventHandler SnapshotsRequested;
+        public event EventHandler SettingsRequested;
 
         // ------------------------------------------------------------------
         // 프레임 버퍼 소유권
@@ -90,6 +91,7 @@ namespace Etus.DetectSample
         bool _badgeInitialized;
         SeatState _lastBadgeState;
         bool _lastSlump;
+        bool _lastBehaviorUnknown;
 
         bool _suppressCameraEvent;
 
@@ -152,13 +154,13 @@ namespace Etus.DetectSample
             {
                 lblEyeK, lblClosedK, lblPerclosK, lblNoFaceK, lblLandmarkK, lblMaskK,
                 lblOcclK, lblFineK, lblPoseK, lblFaceIdK,
-                lblSeatedK, lblStudyK, lblDrowsyK, lblAwayK, lblUnknownK, lblBlinkK
+                lblSeatedK, lblStudyK, lblDrowsyK, lblAwayK, lblUnknownK
             };
             Label[] values = new Label[]
             {
                 lblEyeV, lblClosedV, lblPerclosV, lblNoFaceV, lblLandmarkV, lblMaskV,
                 lblOcclV, lblFineV, lblPoseV, lblFaceIdV,
-                lblSeatedV, lblStudyV, lblDrowsyV, lblAwayV, lblUnknownV, lblBlinkV
+                lblSeatedV, lblStudyV, lblDrowsyV, lblAwayV, lblUnknownV
             };
 
             for (int i = 0; i < keys.Length; i++)
@@ -177,6 +179,7 @@ namespace Etus.DetectSample
             tsBtnStart.Click += TsBtnStart_Click;
             tsBtnStop.Click += TsBtnStop_Click;
             tsBtnSnapshots.Click += TsBtnSnapshots_Click;
+            tsBtnSettings.Click += TsBtnSettings_Click;
             tsCmbCamera.SelectedIndexChanged += TsCmbCamera_SelectedIndexChanged;
 
             // PictureBox 는 생성자에서 ControlStyles.OptimizedDoubleBuffer 를 켜므로
@@ -286,6 +289,17 @@ namespace Etus.DetectSample
                 tsslInit.Text = "초기화: " + m;
                 if (lblPreviewOverlay.Visible) lblPreviewOverlay.Text = m;
             });
+        }
+
+        /// <summary>
+        /// 오류가 아닌 정보성 메시지(세션 시작, Face.id 변경, 프레임 유실 등 상태머신 리셋 사유)를
+        /// 상태바에만 조용히 보여준다. 빨간 오류 배너(<see cref="SetError"/>)와 섞이면 정상 동작을
+        /// 오류로 오인하게 되므로 분리해 둔다.
+        /// </summary>
+        public void SetInfo(string message)
+        {
+            string m = string.IsNullOrEmpty(message) ? "-" : message;
+            RunOnUi(delegate { tsslInit.Text = "정보: " + m; });
         }
 
         /// <summary>치명적이지 않은 오류를 상단 빨간 띠로 보여준다. 클릭하면 사라진다.</summary>
@@ -471,11 +485,23 @@ namespace Etus.DetectSample
 
         void ApplyBadge(SeatState state, bool slump, UnknownReason reason, double elapsedSec)
         {
-            if (!_badgeInitialized || _lastBadgeState != state || _lastSlump != slump)
+            // "판정불가"(Unknown) 중에서도 고개 돌림/가림처럼 학생의 실제 행동으로 설명되는 사유는
+            // 시스템 오류처럼 보이는 "판정 불가" 대신 "집중 흐트러짐 의심"으로 톤을 바꾼다.
+            // SDK 오류/저품질 등 시스템성 사유는 학생 탓이 아니므로 그대로 둔다.
+            bool behaviorUnknown = state == SeatState.Unknown && IsBehaviorReason(reason);
+
+            if (!_badgeInitialized || _lastBadgeState != state || _lastSlump != slump ||
+                _lastBehaviorUnknown != behaviorUnknown)
             {
                 string ko;
                 Color col;
                 MapState(state, out ko, out col);
+
+                if (behaviorUnknown)
+                {
+                    ko = "집중 흐트러짐 의심";
+                    col = ColSuspect;
+                }
 
                 lblStateBig.Text = slump ? (ko + "  (엎드림 의심)") : ko;
                 lblStateCode.Text = state.ToString().ToUpperInvariant();
@@ -488,6 +514,7 @@ namespace Etus.DetectSample
 
                 _lastBadgeState = state;
                 _lastSlump = slump;
+                _lastBehaviorUnknown = behaviorUnknown;
                 _badgeInitialized = true;
             }
 
@@ -576,7 +603,6 @@ namespace Etus.DetectSample
             SetText(lblDrowsyV, FmtHms(snap.DrowsySec) + "   (" + snap.DrowsyCount.ToString(CultureInfo.InvariantCulture) + "회)");
             SetText(lblAwayV, FmtHms(snap.AwaySec) + "   (" + snap.AwayCount.ToString(CultureInfo.InvariantCulture) + "회)");
             SetText(lblUnknownV, FmtHms(snap.UnknownSec));
-            SetText(lblBlinkV, snap.BlinkCount.ToString(CultureInfo.InvariantCulture) + " 회");
         }
 
         // ==================================================================
@@ -918,6 +944,12 @@ namespace Etus.DetectSample
             if (h != null) h(this, EventArgs.Empty);
         }
 
+        void TsBtnSettings_Click(object sender, EventArgs e)
+        {
+            EventHandler h = SettingsRequested;
+            if (h != null) h(this, EventArgs.Empty);
+        }
+
         void TsCmbCamera_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_suppressCameraEvent) return;
@@ -1002,6 +1034,22 @@ namespace Etus.DetectSample
                 case SeatState.Away: ko = "이 석"; color = ColDanger; break;
                 case SeatState.Unknown: ko = "판정 불가"; color = ColIdle; break;
                 default: ko = "-"; color = ColIdle; break;
+            }
+        }
+
+        /// <summary>학생의 실제 동작(고개 돌림/가림)으로 설명되는 Unknown 사유인지. SDK 오류/저품질 등
+        /// 시스템성 사유는 false — "집중력 문제"로 잘못 보이면 안 된다.</summary>
+        static bool IsBehaviorReason(UnknownReason r)
+        {
+            switch (r)
+            {
+                case UnknownReason.PoseOutOfRange:
+                case UnknownReason.EyeOccluded:
+                case UnknownReason.FineOccluded:
+                case UnknownReason.AsymmetricEye:
+                    return true;
+                default:
+                    return false;
             }
         }
 

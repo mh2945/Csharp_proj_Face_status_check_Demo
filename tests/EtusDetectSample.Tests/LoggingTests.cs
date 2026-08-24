@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
-using Etus.DetectSample.Logging;
-using Etus.DetectSample.Tests.Support;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
+using Etoos.DetectSample.Logging;
+using Etoos.DetectSample.Tests.Support;
 using Xunit;
 
-namespace Etus.DetectSample.Tests
+namespace Etoos.DetectSample.Tests
 {
     /// <summary>
     /// 로그 산출물(frames CSV / alerts JSONL / session CSV).
@@ -79,7 +79,7 @@ namespace Etus.DetectSample.Tests
 
                 string[] lines = File.ReadAllLines(path);
                 int headerCols = Csv.SplitLine(lines[0]).Count;
-                Assert.Equal(37, headerCols);
+                Assert.Equal(36, headerCols);
 
                 for (int i = 1; i < lines.Length; i++)
                 {

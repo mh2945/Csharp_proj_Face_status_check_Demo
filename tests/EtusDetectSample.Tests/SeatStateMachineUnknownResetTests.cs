@@ -1,11 +1,11 @@
 using System;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
-using Etus.DetectSample.Tests.Support;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
+using Etoos.DetectSample.Tests.Support;
 using Xunit;
 
-namespace Etus.DetectSample.Tests
+namespace Etoos.DetectSample.Tests
 {
     /// <summary>
     /// Unknown 유예와 리셋. 오탐 방지의 핵심이라 졸음/이석 판정보다 먼저 깨진다.
@@ -16,15 +16,15 @@ namespace Etus.DetectSample.Tests
         // Unknown 유예
         // ==================================================================
 
-        [Fact(DisplayName = "Unknown 이 유예(1.5초) 이하면 직전 상태를 유지한다")]
+        [Fact(DisplayName = "Unknown 이 유예(3.0초) 이하면 직전 상태를 유지한다")]
         public void ShortUnknown_KeepsPreviousState()
         {
             Harness h = new Harness();
-            // 8 FPS 에서 12 프레임 = 정확히 1.5초. UnknownGraceSec 와 같으므로 '초과'가 아니다.
-            h.Run(Seq.Start().Open(3.0).Unknown(UnknownReason.PoseOutOfRange, 1.5));
+            // 8 FPS 에서 24 프레임 = 정확히 3.0초. UnknownGraceSec 와 같으므로 '초과'가 아니다.
+            h.Run(Seq.Start().Open(3.0).Unknown(UnknownReason.PoseOutOfRange, 3.0));
 
             Assert.Equal(SeatState.Awake, h.State);
-            Assert.Equal(1.5, h.Machine.UnknownSec, 9);
+            Assert.Equal(3.0, h.Machine.UnknownSec, 9);
         }
 
         [Fact(DisplayName = "Unknown 이 유예 이하면 ClosedEyeSec 이 얼어붙는다(누적 금지)")]
@@ -43,8 +43,8 @@ namespace Etus.DetectSample.Tests
         public void LongUnknown_TransitionsToUnknown()
         {
             Harness h = new Harness();
-            // 13 프레임 = 1.625초 > 1.5초
-            h.Run(Seq.Start().Open(3.0).Unknown(UnknownReason.PoseOutOfRange, 1.625));
+            // 25 프레임 = 3.125초 > 3.0초
+            h.Run(Seq.Start().Open(3.0).Unknown(UnknownReason.PoseOutOfRange, 3.125));
 
             Assert.Equal(SeatState.Unknown, h.State);
         }

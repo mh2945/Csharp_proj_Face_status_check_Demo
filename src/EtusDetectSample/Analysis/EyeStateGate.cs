@@ -1,7 +1,7 @@
 using System;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Analysis
+namespace Etoos.DetectSample.Analysis
 {
     /// <summary>
     /// 프레임 1장의 원시 관측값을 "믿을 수 있는 눈 상태"로 환산하는 게이트.

@@ -4,10 +4,10 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Logging
+namespace Etoos.DetectSample.Logging
 {
     /// <summary>
     /// 프레임별 관측/판정값을 CSV 로 남긴다. 임계값 재보정의 근거 자료가 되는 산출물이다.
@@ -28,7 +28,7 @@ namespace Etus.DetectSample.Logging
             "ts,wallClock,frameIndex,faceDetected,faceCount,faceId,boxX,boxY,boxW,boxH," +
             "yaw,pitch,roll,landmarkConf,maskConf,isMasked,occlL,occlR,occlM,fineOccl," +
             "eyelidL,eyelidR,eyelidValid,eyeState,unknownReason,state,slump,closedSec,noFaceSec,perclos," +
-            "seatedSec,studySec,drowsySec,awaySec,unknownSec,blinkCount,sdkMs";
+            "seatedSec,studySec,drowsySec,awaySec,unknownSec,sdkMs";
 
         /// <summary>flush 스레드가 큐를 다시 확인하는 주기(ms). 판정 임계값이 아니다.</summary>
         private const int FlushIntervalMs = 500;
@@ -170,7 +170,7 @@ namespace Etus.DetectSample.Logging
                 StringBuilder sb = new StringBuilder(512);
                 sb.Append("sessionStart,sessionEnd,observedSec,frames,seatId,")
                   .Append("seatedSec,studySec,drowsySec,awaySec,unknownSec,")
-                  .Append("drowsyCount,awayCount,blinkCount,lastState,settings\n");
+                  .Append("drowsyCount,awayCount,lastState,settings\n");
 
                 sb.Append(S(_startedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))).Append(',');
                 sb.Append(S(endedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture))).Append(',');
@@ -184,7 +184,6 @@ namespace Etus.DetectSample.Logging
                 sb.Append(D(stats.UnknownSec, 2)).Append(',');
                 sb.Append(stats.DrowsyCount.ToString(CultureInfo.InvariantCulture)).Append(',');
                 sb.Append(stats.AwayCount.ToString(CultureInfo.InvariantCulture)).Append(',');
-                sb.Append(stats.BlinkCount.ToString(CultureInfo.InvariantCulture)).Append(',');
                 sb.Append(S(last != null ? last.State.ToString() : "")).Append(',');
                 sb.Append(S(_settings.ToString())).Append('\n');
 
@@ -375,7 +374,6 @@ namespace Etus.DetectSample.Logging
             sb.Append(D(s.DrowsySec, 2)).Append(',');
             sb.Append(D(s.AwaySec, 2)).Append(',');
             sb.Append(D(s.UnknownSec, 2)).Append(',');
-            sb.Append(s.BlinkCount.ToString(CultureInfo.InvariantCulture)).Append(',');
             sb.Append(o == null ? "" : D(o.SdkElapsedMs, 2));
 
             return sb.ToString();

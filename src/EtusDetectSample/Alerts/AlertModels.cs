@@ -1,6 +1,6 @@
 using System;
 
-namespace Etus.DetectSample.Alerts
+namespace Etoos.DetectSample.Alerts
 {
     /// <summary>알림 종류.</summary>
     public enum AlertType
@@ -60,6 +60,6 @@ namespace Etus.DetectSample.Alerts
     public sealed class AlertSessionSummary
     {
         public double SeatedSec, StudySec, DrowsySec, AwaySec, UnknownSec;
-        public int DrowsyCount, AwayCount, BlinkCount;
+        public int DrowsyCount, AwayCount;
     }
 }

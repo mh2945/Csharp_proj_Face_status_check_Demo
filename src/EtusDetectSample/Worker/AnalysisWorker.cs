@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Capture;
-using Etus.DetectSample.Config;
-using Etus.DetectSample.Sdk;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Capture;
+using Etoos.DetectSample.Config;
+using Etoos.DetectSample.Sdk;
 
-namespace Etus.DetectSample.Worker
+namespace Etoos.DetectSample.Worker
 {
     /// <summary>
     /// 카메라 캡처 + FaceSDK 분석 전담 스레드 1개.
@@ -132,7 +132,7 @@ namespace Etus.DetectSample.Worker
 
             _thread = new Thread(Run);
             _thread.IsBackground = true;   // UI 가 먼저 죽어도 프로세스가 남지 않게
-            _thread.Name = "EtusAnalysisWorker";
+            _thread.Name = "EtoosAnalysisWorker";
             _thread.Start();
         }
 

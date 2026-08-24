@@ -3,7 +3,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace Etus.DetectSample
+namespace Etoos.DetectSample
 {
     internal static class Program
     {

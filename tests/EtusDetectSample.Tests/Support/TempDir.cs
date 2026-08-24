@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Etus.DetectSample.Tests.Support
+namespace Etoos.DetectSample.Tests.Support
 {
     /// <summary>테스트용 임시 디렉토리. using 블록이 끝나면 통째로 지운다.</summary>
     public sealed class TempDir : IDisposable
