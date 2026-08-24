@@ -30,15 +30,17 @@ namespace Etus.DetectSample.Analysis
         public const string MsgAwayConfirmed = "학생이 좌석을 옮겼습니다";
         public const string MsgRecovered = "학생이 정상 상태로 돌아왔습니다";
         public const string MsgPerclos = "눈 감김 비율(PERCLOS)이 높습니다";
+        public const string MsgPersonChanged = "인식 대상이 바뀐 것 같습니다";
 
         /// <summary>
         /// 엎드림(slump) 유지 상한 배수.
         /// 상한 = AppSettings.NoFaceConfirmSec * SlumpAwayFallbackMultiplier.
-        /// 기본 설정에서는 5.0 * 3.0 = 15초. 이 시간을 넘도록 얼굴이 안 보이면
+        /// 기본 설정에서는 5.0 * 1.0 = 5초 — 상태 전환 기준을 최대 5초로 통일하기 위해
+        /// NoFaceConfirmSec 과 동일하게 맞춘다. 이 시간을 넘도록 얼굴이 안 보이면
         /// "엎드려 자는 중"이 아니라 "진짜 자리를 비웠다"로 본다.
         /// 절대 시간을 새 임계값으로 박지 않고 기존 임계값의 배수로 유도한다(매직 넘버 금지).
         /// </summary>
-        private const double SlumpAwayFallbackMultiplier = 3.0;
+        private const double SlumpAwayFallbackMultiplier = 1.0;
 
         /// <summary>FPS 평활화용 이동평균 창(프레임 수). 판정 임계값이 아니라 표시용 상수다.</summary>
         private const int FpsWindowFrames = 30;
@@ -112,7 +114,7 @@ namespace Etus.DetectSample.Analysis
         public double Perclos { get { return ComputePerclos(); } }
         /// <summary>마지막 리셋 사유. 리셋된 적이 없으면 null.</summary>
         public string LastResetReason { get { return _lastResetReason; } }
-        /// <summary>엎드림 유지 상한(초). = NoFaceConfirmSec * 3.0</summary>
+        /// <summary>엎드림 유지 상한(초). = NoFaceConfirmSec * 1.0 (상태 전환 기준 최대 5초 통일)</summary>
         public double SlumpAwayFallbackSec { get { return _settings.NoFaceConfirmSec * SlumpAwayFallbackMultiplier; } }
 
         /// <summary>프레임 1장을 밀어넣고, 이번 프레임에서 발생한 알림들을 돌려준다.</summary>
@@ -147,9 +149,11 @@ namespace Etus.DetectSample.Analysis
 
             // Face.id 변경 = 다른 사람. 프레임 유실 리셋이 이미 잡혔으면 그 사유를 우선한다.
             // id 가 -1(미검출)인 프레임은 비교 대상에서 제외한다.
+            bool isTrackChange = false;
             if (resetReason == null && _settings.ResetOnTrackIdChange &&
                 obs.FaceTrackId >= 0 && _lastValidTrackId >= 0 && obs.FaceTrackId != _lastValidTrackId)
             {
+                isTrackChange = true;
                 resetReason = string.Format(CultureInfo.InvariantCulture,
                     "Face.id 변경 {0} -> {1}", _lastValidTrackId, obs.FaceTrackId);
             }
@@ -159,6 +163,14 @@ namespace Etus.DetectSample.Analysis
                 ResetInternal(resetReason);
                 // 관측하지 않은(또는 다른 사람의) 시간은 누적 통계에 더하지 않는다.
                 dt = 0.0;
+
+                // 사용자에게 "인식 대상이 바뀐 것 같다"를 알림 목록/사운드로도 알린다.
+                // (기존 TryEmit 의 cooldown/dispatcher 재사용 — 별도 알림 경로를 새로 만들지 않는다)
+                if (isTrackChange)
+                {
+                    TryEmit(alerts, AlertType.PersonChanged, AlertLevel.Warn, MsgPersonChanged,
+                            0.0, obs, eye, stats, now, 0.0);
+                }
             }
 
             if (obs.FaceTrackId >= 0) _lastValidTrackId = obs.FaceTrackId;

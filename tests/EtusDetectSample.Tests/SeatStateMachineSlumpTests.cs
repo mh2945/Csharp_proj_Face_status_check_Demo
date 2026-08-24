@@ -28,11 +28,11 @@ namespace Etus.DetectSample.Tests
             Assert.Equal(0, h.Stats.AwayCount);
         }
 
-        [Fact(DisplayName = "엎드림 상한(NoFaceConfirmSec x 3 = 15초)을 넘기면 결국 Away 로 내려간다")]
+        [Fact(DisplayName = "엎드림 상한(NoFaceConfirmSec x 1 = 5초)을 넘기면 결국 Away 로 내려간다")]
         public void Slump_ExceedingFallbackLimit_BecomesAway()
         {
             Harness h = new Harness();
-            Assert.Equal(15.0, h.Machine.SlumpAwayFallbackSec, 9);
+            Assert.Equal(5.0, h.Machine.SlumpAwayFallbackSec, 9);
 
             h.Run(Seq.Start().Open(1.0).Closed(2.0).NoFace(20.0));
 

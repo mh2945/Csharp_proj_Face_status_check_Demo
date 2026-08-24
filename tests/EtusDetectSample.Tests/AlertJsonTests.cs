@@ -55,6 +55,7 @@ namespace Etus.DetectSample.Tests
             Assert.Equal("DROWSY", AlertJson.TypeName(AlertType.Drowsy));
             Assert.Equal("AWAY", AlertJson.TypeName(AlertType.Away));
             Assert.Equal("RECOVERED", AlertJson.TypeName(AlertType.Recovered));
+            Assert.Equal("PERSON_CHANGED", AlertJson.TypeName(AlertType.PersonChanged));
             Assert.Equal("WARN", AlertJson.LevelName(AlertLevel.Warn));
             Assert.Equal("ALERT", AlertJson.LevelName(AlertLevel.Alert));
             Assert.Equal("CLEAR", AlertJson.LevelName(AlertLevel.Clear));

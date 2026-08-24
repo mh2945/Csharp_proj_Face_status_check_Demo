@@ -39,9 +39,13 @@ namespace Etus.DetectSample
         readonly AlertDispatcher _dispatcher;
         readonly FrameCsvLogger _frameLog;
         readonly AlertJsonlLogger _alertLog;
+        readonly AlertSnapshotWriter _snapshotWriter;
 
         SeatSnapshot _lastSnapshot;
         bool _disposed;
+
+        /// <summary>증거 스냅샷이 저장되는 폴더. 스냅샷 뷰어를 열 때 쓴다.</summary>
+        public string SnapshotDirectory { get { return _snapshotWriter.Directory; } }
 
         public AppController(MainForm form)
         {
@@ -57,6 +61,7 @@ namespace Etus.DetectSample
 
             _frameLog = new FrameCsvLogger(_settings, OnComponentError);
             _alertLog = new AlertJsonlLogger(_settings, OnComponentError);
+            _snapshotWriter = new AlertSnapshotWriter(_settings, OnComponentError);
 
             _dispatcher = new AlertDispatcher(OnComponentError);
             _dispatcher.AddSink("jsonl", _alertLog.Write);
@@ -75,10 +80,12 @@ namespace Etus.DetectSample
             _worker = new AnalysisWorker(_settings, _engine, OnFrame, OnWorkerError);
             _worker.EngineInitialized = OnEngineInitialized;
             _worker.CameraOpened = OnCameraOpened;
+            _worker.Progress = OnProgress;
 
             _form.StartRequested += OnStartRequested;
             _form.StopRequested += OnStopRequested;
             _form.CameraSelected += OnCameraSelected;
+            _form.SnapshotsRequested += OnSnapshotsRequested;
             _form.FormClosing += OnFormClosing;
 
             foreach (string w in warnings)
@@ -136,6 +143,23 @@ namespace Etus.DetectSample
             _worker.SetCameraIndex(index);
         }
 
+        /// <summary>
+        /// 증거 스냅샷 폴더를 탐색기로 연다. jpg 파일명에 시각/유형/레벨이 이미 인코딩돼 있으므로
+        /// 탐색기 미리보기/정렬만으로 별도 뷰어 없이 확인할 수 있다("Simple is Best").
+        /// </summary>
+        void OnSnapshotsRequested(object sender, EventArgs e)
+        {
+            try
+            {
+                LogPaths.EnsureDirectory(SnapshotDirectory);
+                System.Diagnostics.Process.Start("explorer.exe", "\"" + SnapshotDirectory + "\"");
+            }
+            catch (Exception ex)
+            {
+                _form.SetError("스냅샷 폴더를 열지 못했습니다: " + ex.Message);
+            }
+        }
+
         //
         // 워커 → 판정 → UI  (전부 워커 스레드)
         //
@@ -157,7 +181,14 @@ namespace Etus.DetectSample
             _form.PushSnapshot(snap, preview);
 
             if (alerts != null && alerts.Count > 0)
+            {
                 _dispatcher.Dispatch(alerts);
+
+                // 확정(Alert) 알림의 증거 스냅샷을 남긴다. preview 는 이 콜백 안에서만 유효하므로
+                // (워커가 프레임마다 재사용하는 버퍼) 반드시 여기서 동기적으로 저장한다.
+                for (int i = 0; i < alerts.Count; i++)
+                    _snapshotWriter.Write(alerts[i], preview);
+            }
         }
 
         void PushAlertToUi(AlertEvent e)
@@ -190,6 +221,11 @@ namespace Etus.DetectSample
         void OnCameraOpened(string summary)
         {
             _form.SetEngineInfo(summary);
+        }
+
+        void OnProgress(string message)
+        {
+            _form.SetProgress(message);
         }
 
         void OnWorkerError(string message)

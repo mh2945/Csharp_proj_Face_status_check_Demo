@@ -97,6 +97,18 @@ namespace Etus.DetectSample.Tests
             Assert.Equal(SeatState.Awake, h.State);
         }
 
+        [Fact(DisplayName = "Face.id 가 바뀌면 PersonChanged 알림이 1건 발생한다(알림 목록/사운드 재사용)")]
+        public void TrackIdChange_EmitsPersonChangedAlert()
+        {
+            Harness h = new Harness();
+
+            h.Run(Seq.Start().TrackId(1).Open(1.0).Closed(3.0).TrackId(2).Closed(1.0));
+
+            Assert.Equal(1, h.CountOf(AlertType.PersonChanged, AlertLevel.Warn));
+            Assert.Equal(SeatStateMachine.MsgPersonChanged,
+                         h.AlertsOf(AlertType.PersonChanged, AlertLevel.Warn)[0].Message);
+        }
+
         [Fact(DisplayName = "ResetOnTrackIdChange = false 면 id 가 바뀌어도 리셋하지 않는다")]
         public void TrackIdChange_Ignored_WhenDisabled()
         {

@@ -127,6 +127,7 @@ namespace Etus.DetectSample.Alerts
                 case AlertType.Drowsy: return "DROWSY";
                 case AlertType.Away: return "AWAY";
                 case AlertType.Recovered: return "RECOVERED";
+                case AlertType.PersonChanged: return "PERSON_CHANGED";
                 default: return t.ToString().ToUpperInvariant();
             }
         }

@@ -118,6 +118,7 @@
     <Compile Include="Sdk\FaceEngine.cs" />
     <Compile Include="Capture\CameraCapture.cs" />
     <Compile Include="Capture\BgrBitmap.cs" />
+    <Compile Include="Capture\AlertSnapshotWriter.cs" />
     <Compile Include="Worker\AnalysisWorker.cs" />
     <Compile Include="Analysis\FrameObservation.cs" />
     <Compile Include="Analysis\EyeStateGate.cs" />

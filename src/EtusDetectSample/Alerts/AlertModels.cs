@@ -8,6 +8,7 @@ namespace Etus.DetectSample.Alerts
         Drowsy = 0,
         Away,
         Recovered,
+        PersonChanged,
     }
 
     /// <summary>알림 수준. 의심=Warn, 확정=Alert, 복귀=Clear.</summary>

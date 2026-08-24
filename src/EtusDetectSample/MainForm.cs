@@ -46,6 +46,7 @@ namespace Etus.DetectSample
         public event EventHandler StartRequested;
         public event EventHandler StopRequested;
         public event EventHandler<int> CameraSelected;
+        public event EventHandler SnapshotsRequested;
 
         // ------------------------------------------------------------------
         // 프레임 버퍼 소유권
@@ -91,6 +92,9 @@ namespace Etus.DetectSample
         bool _lastSlump;
 
         bool _suppressCameraEvent;
+
+        // 시작 직후 첫 프레임이 도착할 때까지 lblPreviewOverlay 를 띄워 둘지
+        bool _firstFramePending;
 
         Font _fontValue;
         Font _fontHud;
@@ -172,6 +176,7 @@ namespace Etus.DetectSample
         {
             tsBtnStart.Click += TsBtnStart_Click;
             tsBtnStop.Click += TsBtnStop_Click;
+            tsBtnSnapshots.Click += TsBtnSnapshots_Click;
             tsCmbCamera.SelectedIndexChanged += TsCmbCamera_SelectedIndexChanged;
 
             // PictureBox 는 생성자에서 ControlStyles.OptimizedDoubleBuffer 를 켜므로
@@ -269,6 +274,20 @@ namespace Etus.DetectSample
             });
         }
 
+        /// <summary>
+        /// 시작 구간(엔진 초기화 → 카메라 오픈) 진행 상황을 상태바와 영상 오버레이에 함께 보여준다.
+        /// 첫 프레임이 도착하기 전까지는 화면이 비어 있어 정상 동작 중인지 알기 어렵기 때문이다.
+        /// </summary>
+        public void SetProgress(string message)
+        {
+            string m = string.IsNullOrEmpty(message) ? "-" : message;
+            RunOnUi(delegate
+            {
+                tsslInit.Text = "초기화: " + m;
+                if (lblPreviewOverlay.Visible) lblPreviewOverlay.Text = m;
+            });
+        }
+
         /// <summary>치명적이지 않은 오류를 상단 빨간 띠로 보여준다. 클릭하면 사라진다.</summary>
         public void SetError(string message)
         {
@@ -299,6 +318,12 @@ namespace Etus.DetectSample
                 {
                     tsLblFps.Text = "-- FPS";
                 }
+
+                // 시작 시점엔 첫 프레임이 올 때까지 오버레이로 "준비 중"을 보여주고,
+                // 정지 시점엔 다음 시작을 위해 오버레이를 숨겨 둔다(마지막 화면이 가려지지 않게).
+                _firstFramePending = r;
+                lblPreviewOverlay.Visible = r;
+                if (r) lblPreviewOverlay.Text = "카메라를 준비하는 중입니다. 잠시만 기다려주세요...";
             });
         }
 
@@ -419,6 +444,13 @@ namespace Etus.DetectSample
             if (snap == null) return;
             _displaySnapshot = snap;
 
+            // 첫 영상 프레임이 실제로 도착한 순간 "준비 중" 오버레이를 내린다.
+            if (_firstFramePending && swapped)
+            {
+                _firstFramePending = false;
+                lblPreviewOverlay.Visible = false;
+            }
+
             UpdateBadge(snap);
             UpdateSignals(snap);
             UpdateTotals(snap);
@@ -528,12 +560,12 @@ namespace Etus.DetectSample
             if (obs.FaceDetected)
             {
                 SetText(lblPoseV, F0(obs.Yaw) + " / " + F0(obs.Pitch) + " / " + F0(obs.Roll));
-                SetText(lblFaceIdV, obs.FaceTrackId < 0 ? "—" : obs.FaceTrackId.ToString(CultureInfo.InvariantCulture));
+                SetText(lblFaceIdV, obs.FaceTrackId < 0 ? "인식 대상 없음" : "정상 인식 중");
             }
             else
             {
                 SetText(lblPoseV, "—");
-                SetText(lblFaceIdV, "—");
+                SetText(lblFaceIdV, "인식 대상 없음");
             }
         }
 
@@ -659,32 +691,8 @@ namespace Etus.DetectSample
                 }
             }
 
-            // --- 106-point landmark ---
-            if (obs != null && obs.Landmark106 != null && obs.Landmark106.Length >= 212)
-            {
-                // 눈 인덱스 미확인:
-                // FaceSDK.cs 의 LandMark 구조체(p0~p105)에는 각 포인트의 의미가 정의되어 있지 않고
-                // SDK 문서에서도 106점의 인덱스 매핑을 확인하지 못했다. 인덱스를 추측해서
-                // "눈 주변"만 칠하면 엉뚱한 점을 강조할 위험이 있으므로,
-                // 눈 상태(Open/Closed)는 landmark 전체 색으로 표현한다.
-                // 인덱스 매핑이 확인되면 이 블록만 눈 주변 강조로 바꾸면 된다.
-                Color lmColor;
-                switch (snap.Eye.State)
-                {
-                    case EyeState.Open: lmColor = Color.FromArgb(90, 230, 140); break;
-                    case EyeState.Closed: lmColor = Color.FromArgb(255, 90, 90); break;
-                    default: lmColor = Color.FromArgb(190, 195, 200); break;
-                }
-
-                float[] lm = obs.Landmark106;
-                using (SolidBrush b = new SolidBrush(lmColor))
-                {
-                    for (int i = 0; i + 1 < 212; i += 2)
-                    {
-                        g.FillRectangle(b, map.X(lm[i]) - 1.5f, map.Y(lm[i + 1]) - 1.5f, 3f, 3f);
-                    }
-                }
-            }
+            // landmark(106점) 오버레이는 화면을 어지럽혀 표시하지 않는다.
+            // 감지 박스(위)만 남긴다 — SDK 의 landmark 캡처 자체는 그대로 유지된다.
 
             // --- 영상 좌상단 HUD ---
             // 세로 프리뷰라 폭이 좁다. HUD 도 같은 변환(map)으로 영상 좌상단에 붙이고,
@@ -904,6 +912,12 @@ namespace Etus.DetectSample
             if (h != null) h(this, EventArgs.Empty);
         }
 
+        void TsBtnSnapshots_Click(object sender, EventArgs e)
+        {
+            EventHandler h = SnapshotsRequested;
+            if (h != null) h(this, EventArgs.Empty);
+        }
+
         void TsCmbCamera_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_suppressCameraEvent) return;
@@ -1014,6 +1028,7 @@ namespace Etus.DetectSample
                 case AlertType.Drowsy: return "졸음";
                 case AlertType.Away: return "이석";
                 case AlertType.Recovered: return "복귀";
+                case AlertType.PersonChanged: return "인식대상 변경";
                 default: return t.ToString();
             }
         }
