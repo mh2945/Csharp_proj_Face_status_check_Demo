@@ -1,0 +1,22 @@
+# --- build output ---
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# --- NuGet ---
+packages/
+
+# --- SDK 런타임 (tools/setup-runtime.bat 로 생성. zip 원본에서 추출하므로 커밋하지 않는다) ---
+natives/
+
+# --- 모델 (0.f 하나가 260MB. git 에 넣지 않는다) ---
+models/
+
+# --- 실행 산출물 ---
+logs/
+
+# --- OS ---
+.DS_Store
+Thumbs.db

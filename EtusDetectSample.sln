@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.37506.8
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EtusDetectSample", "src\EtusDetectSample\EtusDetectSample.csproj", "{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}.Debug|x64.ActiveCfg = Debug|x64
+		{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}.Debug|x64.Build.0 = Debug|x64
+		{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}.Release|x64.ActiveCfg = Release|x64
+		{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2C1E9D74-6B3A-4F52-8A0D-1E7C5B9F2A63}
+	EndGlobalSection
+EndGlobal

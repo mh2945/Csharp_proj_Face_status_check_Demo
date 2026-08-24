@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FASMH-94 PoC — EtusDetectSample
+
+  classic csproj (SDK-style 아님). 이유:
+    - WinForms 디자이너(.resx / *.Designer.cs)를 VS 에서 그대로 쓰기 위함
+    - net48 + PackageReference 조합에서 OpenCvSharp4 native 배치가 검증되어 있음
+
+  플랫폼:
+    AlcheraFaceSDK.dll / AlcheraFaceSDKCS.dll / opencv_world455.dll 은 전부 x64 전용이다.
+    AnyCPU(=32bit 선호) 로 빌드하면 첫 P/Invoke 에서 BadImageFormatException 으로 죽는다.
+    → 모든 Configuration/Platform 조합에서 PlatformTarget=x64, Prefer32Bit=false 로 고정한다.
+-->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5F3B1A20-7C4E-4A6D-9E11-3D8C2B7A94F1}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Etus.DetectSample</RootNamespace>
+    <AssemblyName>EtusDetectSample</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <!-- 계약: C# 7.3 만 사용 (net8.0 테스트 프로젝트와 소스 공유). -->
+    <LangVersion>7.3</LangVersion>
+    <!-- classic csproj 에서 packages.config 대신 PackageReference 복원을 쓰게 한다. -->
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <!-- 어떤 Platform 으로 빌드하든 산출물은 x64 한 곳으로 모은다. -->
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\x64\$(Configuration)\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\x64\$(Configuration)\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\x64\$(Configuration)\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\x64\$(Configuration)\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      OpenCvSharp4.Windows = OpenCvSharp4 + OpenCvSharp4.runtime.win 메타패키지.
+      net48 대상일 때 runtime.win 의 props 가 OpenCvSharpExtern.dll 을
+      출력폴더의 dll\x64\ , dll\x86\ 아래로 복사한다(출력 루트가 아님 — 정상 동작).
+    -->
+    <PackageReference Include="OpenCvSharp4.Windows">
+      <Version>4.11.0.20250507</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="AppController.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sdk\FaceSDK.cs" />
+    <Compile Include="Sdk\FaceEngine.cs" />
+    <Compile Include="Capture\CameraCapture.cs" />
+    <Compile Include="Capture\BgrBitmap.cs" />
+    <Compile Include="Worker\AnalysisWorker.cs" />
+    <Compile Include="Analysis\FrameObservation.cs" />
+    <Compile Include="Analysis\EyeStateGate.cs" />
+    <Compile Include="Analysis\SeatStateMachine.cs" />
+    <Compile Include="Analysis\SessionStats.cs" />
+    <Compile Include="Alerts\AlertModels.cs" />
+    <Compile Include="Alerts\AlertJson.cs" />
+    <Compile Include="Alerts\AlertDispatcher.cs" />
+    <Compile Include="Logging\FrameCsvLogger.cs" />
+    <Compile Include="Logging\AlertJsonlLogger.cs" />
+    <Compile Include="Config\AppSettings.cs" />
+    <Compile Include="Config\AppSettingsLoader.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      FaceSDK native/managed 런타임. tools\setup-runtime.bat 이 repo 루트의 natives\ 로 추출한다.
+      <Link> 를 %(Filename)%(Extension) 로 두면 출력폴더 '루트'에 평탄하게 복사된다
+      (AlcheraFaceSDKCS.dll 은 DllImport 로 로드되므로 반드시 exe 옆에 있어야 한다).
+
+      주의: 이 wildcard 는 프로젝트 '로드 시점'에 평가된다.
+            VS 를 열어둔 상태에서 setup-runtime.bat 을 돌렸다면 프로젝트를 다시 로드할 것.
+
+      models\ 는 여기에 넣지 않는다. 0.f 하나가 260MB 라 VS 가 멈춘다 — setup-runtime.bat 담당.
+    -->
+    <Content Include="..\..\natives\*.dll">
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

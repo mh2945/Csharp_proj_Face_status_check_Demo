@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    판정 로직 단위 테스트.
+
+    [왜 소스 링크인가]
+    앱(src/EtusDetectSample)은 .NET Framework 4.8 이라 net8.0 에서 ProjectReference 로 참조할 수 없다.
+    Analysis / Alerts / Logging / Config 는 외부 의존이 0 이므로(CONTRACT.md 0.3)
+    소스 파일만 링크해서 net8.0 으로 다시 컴파일한다. 그래서 macOS 에서 dotnet test 가 돈다.
+
+    [주의] Config/AppSettingsLoader.cs 는 System.Configuration 을 쓰므로 절대 링크하지 않는다.
+           AppSettings.cs 한 파일만 콕 집어 넣는다.
+
+    [주의] 이 프로젝트는 EtusDetectSample.sln 에 넣지 않는다. 그 sln 은 Windows VS 전용(net48)이다.
+           실행: dotnet test tests/EtusDetectSample.Tests/EtusDetectSample.Tests.csproj
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- 앱과 같은 문법 수준으로 컴파일해야 net48 쪽에서 깨지는 코드를 여기서 잡는다(CONTRACT.md 0.2). -->
+    <LangVersion>7.3</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Etus.DetectSample.Tests</RootNamespace>
+    <AssemblyName>EtusDetectSample.Tests</AssemblyName>
+    <!-- 개발 PC 에 .NET 8 런타임이 없고 10 만 있어도 테스트 호스트가 실행되게 한다. -->
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+
+  <!-- 테스트 대상: 앱 소스 링크 -->
+  <ItemGroup>
+    <Compile Include="..\..\src\EtusDetectSample\Analysis\*.cs" Link="Analysis\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\EtusDetectSample\Alerts\*.cs" Link="Alerts\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\EtusDetectSample\Logging\*.cs" Link="Logging\%(Filename)%(Extension)" />
+    <Compile Include="..\..\src\EtusDetectSample\Config\AppSettings.cs" Link="Config\AppSettings.cs" />
+  </ItemGroup>
+
+  <!-- 테스트 코드 -->
+  <ItemGroup>
+    <Compile Include="*.cs" />
+    <Compile Include="Support\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
