@@ -1,4 +1,4 @@
-﻿namespace Etus.DetectSample
+﻿namespace Etoos.DetectSample
 {
     partial class MainForm
     {
@@ -36,6 +36,9 @@
             this.tsSep1 = new System.Windows.Forms.ToolStripSeparator();
             this.tsBtnStart = new System.Windows.Forms.ToolStripButton();
             this.tsBtnStop = new System.Windows.Forms.ToolStripButton();
+            this.tsSep2 = new System.Windows.Forms.ToolStripSeparator();
+            this.tsBtnSnapshots = new System.Windows.Forms.ToolStripButton();
+            this.tsBtnSettings = new System.Windows.Forms.ToolStripButton();
             this.tsLblFps = new System.Windows.Forms.ToolStripLabel();
             this.tsLblEngine = new System.Windows.Forms.ToolStripLabel();
             this.statusStripBottom = new System.Windows.Forms.StatusStrip();
@@ -46,6 +49,7 @@
             this.splitMain = new System.Windows.Forms.SplitContainer();
             this.splitTop = new System.Windows.Forms.SplitContainer();
             this.picPreview = new System.Windows.Forms.PictureBox();
+            this.lblPreviewOverlay = new System.Windows.Forms.Label();
             this.pnlRight = new System.Windows.Forms.Panel();
             this.tblRight = new System.Windows.Forms.TableLayoutPanel();
             this.tblBadge = new System.Windows.Forms.TableLayoutPanel();
@@ -85,8 +89,6 @@
             this.lblAwayV = new System.Windows.Forms.Label();
             this.lblUnknownK = new System.Windows.Forms.Label();
             this.lblUnknownV = new System.Windows.Forms.Label();
-            this.lblBlinkK = new System.Windows.Forms.Label();
-            this.lblBlinkV = new System.Windows.Forms.Label();
             this.lblDisclaimer = new System.Windows.Forms.Label();
             this.lblAlertHeader = new System.Windows.Forms.Label();
             this.lvAlerts = new System.Windows.Forms.ListView();
@@ -122,6 +124,9 @@
             this.tsSep1,
             this.tsBtnStart,
             this.tsBtnStop,
+            this.tsSep2,
+            this.tsBtnSnapshots,
+            this.tsBtnSettings,
             this.tsLblFps,
             this.tsLblEngine});
             this.toolStripTop.Location = new System.Drawing.Point(0, 0);
@@ -167,7 +172,28 @@
             this.tsBtnStop.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
             this.tsBtnStop.Size = new System.Drawing.Size(80, 26);
             this.tsBtnStop.Text = "■  정지";
-            // 
+            //
+            // tsSep2
+            //
+            this.tsSep2.Name = "tsSep2";
+            this.tsSep2.Size = new System.Drawing.Size(6, 29);
+            //
+            // tsBtnSnapshots
+            //
+            this.tsBtnSnapshots.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsBtnSnapshots.Name = "tsBtnSnapshots";
+            this.tsBtnSnapshots.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
+            this.tsBtnSnapshots.Size = new System.Drawing.Size(110, 26);
+            this.tsBtnSnapshots.Text = "스냅샷 폴더 열기";
+            //
+            // tsBtnSettings
+            //
+            this.tsBtnSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.tsBtnSettings.Name = "tsBtnSettings";
+            this.tsBtnSettings.Padding = new System.Windows.Forms.Padding(10, 0, 10, 0);
+            this.tsBtnSettings.Size = new System.Drawing.Size(80, 26);
+            this.tsBtnSettings.Text = "판정 설정";
+            //
             // tsLblFps
             // 
             this.tsLblFps.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
@@ -263,6 +289,7 @@
             // 
             // splitTop.Panel1
             // 
+            this.splitTop.Panel1.Controls.Add(this.lblPreviewOverlay);
             this.splitTop.Panel1.Controls.Add(this.picPreview);
             this.splitTop.Panel1MinSize = 200;
             // 
@@ -284,7 +311,22 @@
             this.picPreview.Size = new System.Drawing.Size(400, 640);
             this.picPreview.TabIndex = 0;
             this.picPreview.TabStop = false;
-            // 
+            //
+            // lblPreviewOverlay
+            //
+            this.lblPreviewOverlay.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(26)))), ((int)(((byte)(30)))));
+            this.lblPreviewOverlay.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblPreviewOverlay.Font = new System.Drawing.Font("맑은 고딕", 11F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.lblPreviewOverlay.ForeColor = System.Drawing.Color.White;
+            this.lblPreviewOverlay.Location = new System.Drawing.Point(0, 0);
+            this.lblPreviewOverlay.Name = "lblPreviewOverlay";
+            this.lblPreviewOverlay.Size = new System.Drawing.Size(400, 640);
+            this.lblPreviewOverlay.TabIndex = 1;
+            this.lblPreviewOverlay.Text = "카메라를 준비하는 중입니다. 잠시만 기다려주세요...";
+            this.lblPreviewOverlay.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblPreviewOverlay.Visible = false;
+            this.lblPreviewOverlay.BringToFront();
+            //
             // pnlRight
             // 
             this.pnlRight.BackColor = System.Drawing.Color.White;
@@ -336,13 +378,11 @@
             this.tblRight.Controls.Add(this.lblAwayV, 1, 16);
             this.tblRight.Controls.Add(this.lblUnknownK, 0, 17);
             this.tblRight.Controls.Add(this.lblUnknownV, 1, 17);
-            this.tblRight.Controls.Add(this.lblBlinkK, 0, 18);
-            this.tblRight.Controls.Add(this.lblBlinkV, 1, 18);
             this.tblRight.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tblRight.Location = new System.Drawing.Point(0, 0);
             this.tblRight.Name = "tblRight";
             this.tblRight.Padding = new System.Windows.Forms.Padding(10, 8, 10, 8);
-            this.tblRight.RowCount = 19;
+            this.tblRight.RowCount = 18;
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 110F));
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
@@ -356,7 +396,6 @@
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 26F));
-            this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
             this.tblRight.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 24F));
@@ -678,7 +717,7 @@
             this.lblFaceIdK.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
             this.lblFaceIdK.Size = new System.Drawing.Size(233, 24);
             this.lblFaceIdK.TabIndex = 20;
-            this.lblFaceIdK.Text = "Face ID (tracking)";
+            this.lblFaceIdK.Text = "인식 상태";
             this.lblFaceIdK.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblFaceIdV
@@ -822,30 +861,7 @@
             this.lblUnknownV.TabIndex = 32;
             this.lblUnknownV.Text = "00:00:00";
             this.lblUnknownV.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblBlinkK
-            // 
-            this.lblBlinkK.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblBlinkK.Location = new System.Drawing.Point(10, 530);
-            this.lblBlinkK.Margin = new System.Windows.Forms.Padding(0);
-            this.lblBlinkK.Name = "lblBlinkK";
-            this.lblBlinkK.Padding = new System.Windows.Forms.Padding(6, 0, 0, 0);
-            this.lblBlinkK.Size = new System.Drawing.Size(233, 24);
-            this.lblBlinkK.TabIndex = 33;
-            this.lblBlinkK.Text = "Blink";
-            this.lblBlinkK.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblBlinkV
-            // 
-            this.lblBlinkV.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lblBlinkV.Location = new System.Drawing.Point(243, 530);
-            this.lblBlinkV.Margin = new System.Windows.Forms.Padding(0);
-            this.lblBlinkV.Name = "lblBlinkV";
-            this.lblBlinkV.Size = new System.Drawing.Size(322, 24);
-            this.lblBlinkV.TabIndex = 34;
-            this.lblBlinkV.Text = "0 회";
-            this.lblBlinkV.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
+            //
             // lblDisclaimer
             // 
             this.lblDisclaimer.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(249)))), ((int)(((byte)(251)))));
@@ -932,7 +948,7 @@
             this.MinimumSize = new System.Drawing.Size(880, 880);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Etus 학습 집중도 모니터링 PoC  ·  FASMH-94";
+            this.Text = "[FaceSDK] 학습 집중도 모니터링 Demo";
             this.toolStripTop.ResumeLayout(false);
             this.toolStripTop.PerformLayout();
             this.statusStripBottom.ResumeLayout(false);
@@ -962,6 +978,9 @@
         private System.Windows.Forms.ToolStripSeparator tsSep1;
         private System.Windows.Forms.ToolStripButton tsBtnStart;
         private System.Windows.Forms.ToolStripButton tsBtnStop;
+        private System.Windows.Forms.ToolStripSeparator tsSep2;
+        private System.Windows.Forms.ToolStripButton tsBtnSnapshots;
+        private System.Windows.Forms.ToolStripButton tsBtnSettings;
         private System.Windows.Forms.ToolStripLabel tsLblFps;
         private System.Windows.Forms.ToolStripLabel tsLblEngine;
         private System.Windows.Forms.StatusStrip statusStripBottom;
@@ -972,6 +991,7 @@
         private System.Windows.Forms.SplitContainer splitMain;
         private System.Windows.Forms.SplitContainer splitTop;
         private System.Windows.Forms.PictureBox picPreview;
+        private System.Windows.Forms.Label lblPreviewOverlay;
         private System.Windows.Forms.Panel pnlRight;
         private System.Windows.Forms.TableLayoutPanel tblRight;
         private System.Windows.Forms.TableLayoutPanel tblBadge;
@@ -1011,8 +1031,6 @@
         private System.Windows.Forms.Label lblAwayV;
         private System.Windows.Forms.Label lblUnknownK;
         private System.Windows.Forms.Label lblUnknownV;
-        private System.Windows.Forms.Label lblBlinkK;
-        private System.Windows.Forms.Label lblBlinkV;
         private System.Windows.Forms.Label lblDisclaimer;
         private System.Windows.Forms.Label lblAlertHeader;
         private System.Windows.Forms.ListView lvAlerts;

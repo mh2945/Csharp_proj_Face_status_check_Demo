@@ -26,7 +26,7 @@ Alchera **FaceSDK 1.17.7** 기반 Windows 데모. 자습실 좌석에 앉은 학
 
 ### 산출 데이터
 - **착석시간 / 공부시간(비졸음) / 졸음시간 / 이석시간 / 판정불가시간**
-- 졸음·이석 발생 횟수, Blink 횟수, PERCLOS
+- 졸음·이석 발생 횟수, PERCLOS
 - 프레임 단위 원시 로그 (CSV) — 눈꺼풀 거리, occlusion, head pose, landmark 신뢰도, Face tracking ID
 - 알림 payload (JSONL) — 중앙 인포데스크로 그대로 전달 가능한 형태
 
@@ -150,7 +150,7 @@ UI 의 Alert 목록에서 **행을 더블클릭하면 전체 JSON** 을 볼 수 
 - **C# wrapper 는 MultiFace 를 지원하지 않는다.** C bridge export 가 `fsdkc_detect_one_face`
   하나뿐이라 프레임당 대표 얼굴 1개만 온다. 이 데모는 **단일 좌석 1인** 기준이다.
   다좌석은 좌석별 ROI 크롭 후 반복 호출 또는 C++ MultiFace API 가 필요하다.
-- **Blink / 졸음 / 이석 판정은 SDK 기능이 아니다.** SDK 는 프레임 단위 눈꺼풀 거리까지만 준다.
+- **졸음 / 이석 판정은 SDK 기능이 아니다.** SDK 는 프레임 단위 눈꺼풀 거리까지만 준다.
   시간축 판정(`Analysis/`)은 전부 이 데모에서 신규 구현한 것이다.
 - **`DetectFineOcclusion`** 은 model package 에 해당 모델이 없으면 런타임에 자동 비활성된다
   (앱은 정상 동작하고 상태바에 표시된다).
@@ -174,7 +174,7 @@ src/EtusDetectSample/
 ├─ Analysis/             ★ 외부 의존 0 — macOS 에서 단위 테스트됨
 │  ├─ FrameObservation.cs  계층 간 DTO 계약
 │  ├─ EyeStateGate.cs      Open / Closed / Unknown(사유) 판정
-│  ├─ SeatStateMachine.cs  타이머·PERCLOS·Blink·상태 전이
+│  ├─ SeatStateMachine.cs  타이머·PERCLOS·상태 전이
 │  └─ SessionStats.cs      누적 집계
 ├─ Alerts/               payload 스키마 · JSON 직렬화 · fan-out
 ├─ Logging/              CSV · JSONL (백그라운드 flush)

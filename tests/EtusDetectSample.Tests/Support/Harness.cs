@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Tests.Support
+namespace Etoos.DetectSample.Tests.Support
 {
     /// <summary>
     /// EyeStateGate → SeatStateMachine → SessionStats 를 실제 배선 그대로 묶어 돌린다.

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Etus.DetectSample.Analysis;
+using Etoos.DetectSample.Analysis;
 
-namespace Etus.DetectSample.Tests.Support
+namespace Etoos.DetectSample.Tests.Support
 {
     /// <summary>
     /// 합성 프레임 시퀀스 빌더.

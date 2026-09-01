@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Capture;
-using Etus.DetectSample.Config;
-using Etus.DetectSample.Sdk;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Capture;
+using Etoos.DetectSample.Config;
+using Etoos.DetectSample.Sdk;
 
-namespace Etus.DetectSample.Worker
+namespace Etoos.DetectSample.Worker
 {
     /// <summary>
     /// 카메라 캡처 + FaceSDK 분석 전담 스레드 1개.
@@ -61,6 +61,7 @@ namespace Etus.DetectSample.Worker
 
         /// <summary>카메라를 열거나 다시 연 직후 호출된다(요약 문자열). <b>워커 스레드에서 불린다.</b></summary>
         public Action<string> CameraOpened { get; set; }
+        public Action<string> Progress { get; set; }
 
         public bool IsRunning { get { return _running; } }
 
@@ -131,7 +132,7 @@ namespace Etus.DetectSample.Worker
 
             _thread = new Thread(Run);
             _thread.IsBackground = true;   // UI 가 먼저 죽어도 프로세스가 남지 않게
-            _thread.Name = "EtusAnalysisWorker";
+            _thread.Name = "EtoosAnalysisWorker";
             _thread.Start();
         }
 
@@ -232,6 +233,8 @@ namespace Etus.DetectSample.Worker
                 // --- 1) SDK 초기화 (UI 스레드가 아니라 여기서) ---
                 if (!_engine.IsInitialized)
                 {
+                    RaiseProgress("얼굴인식 엔진을 초기화하는 중입니다 (라이선스 확인 포함)...");
+
                     InitResult ir = _engine.Initialize();
 
                     Action<InitResult> cb = EngineInitialized;
@@ -256,6 +259,8 @@ namespace Etus.DetectSample.Worker
                 DrainCommands();
                 if (_exit) return;
 
+                RaiseProgress("카메라를 여는 중입니다...");
+
                 _capture = new CameraCapture();
                 ApplySettingsToCapture();
 
@@ -268,6 +273,7 @@ namespace Etus.DetectSample.Worker
                 }
 
                 RaiseCameraOpened();
+                RaiseProgress("영상을 준비하는 중입니다...");
 
                 _preview = new BgrBitmap();
 
@@ -502,6 +508,16 @@ namespace Etus.DetectSample.Worker
 
             try { cb(message); }
             catch (Exception) { /* 오류 보고 경로에서 또 죽으면 답이 없다 */ }
+        }
+
+        /// <summary>시작 구간 진행 상황을 알린다. 콜백이 없거나 예외를 던져도 워커는 계속 돈다.</summary>
+        void RaiseProgress(string message)
+        {
+            Action<string> cb = Progress;
+            if (cb == null) return;
+
+            try { cb(message); }
+            catch (Exception) { /* 진행 표시 실패로 워커가 죽으면 안 된다 */ }
         }
     }
 }

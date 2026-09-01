@@ -1,14 +1,14 @@
 using System;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
-using Etus.DetectSample.Tests.Support;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
+using Etoos.DetectSample.Tests.Support;
 using Xunit;
 
-namespace Etus.DetectSample.Tests
+namespace Etoos.DetectSample.Tests
 {
-    /// <summary>PERCLOS(눈 감김 비율) 보조 신호와 Blink 카운트.</summary>
-    public class PerclosBlinkTests
+    /// <summary>PERCLOS(눈 감김 비율) 보조 신호.</summary>
+    public class PerclosTests
     {
         [Fact(DisplayName = "PERCLOS 가 PerclosSuspectRatio 를 넘으면 보조 의심 신호를 낸다")]
         public void HighPerclos_RaisesSuspectSignal()
@@ -83,45 +83,6 @@ namespace Etus.DetectSample.Tests
             int count = h.PerclosSampleCount();
             Assert.True(count <= 48, "PERCLOS 표본이 " + count.ToString() + "개 남아 있다 (상한 48 기대)");
             Assert.True(count > 0, "전부 버려지면 PERCLOS 를 계산할 수 없다");
-        }
-
-        // ==================================================================
-        // Blink
-        // ==================================================================
-
-        [Fact(DisplayName = "Blink — 60~500ms 범위의 Open→Closed→Open 만 센다")]
-        public void Blink_CountedOnlyWithinRange()
-        {
-            Harness inRange = new Harness();
-            inRange.Run(Seq.Start().Open(1.0).Closed(0.375).Open(1.0));   // 375ms
-            Assert.Equal(1, inRange.Stats.BlinkCount);
-
-            Harness tooLong = new Harness();
-            tooLong.Run(Seq.Start().Open(1.0).Closed(0.625).Open(1.0));   // 625ms > 500ms
-            Assert.Equal(0, tooLong.Stats.BlinkCount);
-        }
-
-        [Fact(DisplayName = "Blink — 졸음 수준의 긴 감김은 깜빡임으로 세지 않는다")]
-        public void LongClosure_IsNotBlink()
-        {
-            Harness h = new Harness();
-            h.Run(Seq.Start().Open(1.0).Closed(5.0).Open(1.0));
-
-            Assert.Equal(0, h.Stats.BlinkCount);
-            Assert.Equal(1, h.Stats.DrowsyCount);
-        }
-
-        [Fact(DisplayName = "Blink — 중간에 Unknown 이 끼면 깜빡임 시퀀스는 무효다")]
-        public void UnknownInside_InvalidatesBlink()
-        {
-            Harness h = new Harness();
-            h.Run(Seq.Start()
-                     .Open(1.0)
-                     .Closed(0.25)
-                     .Unknown(UnknownReason.AsymmetricEye, 0.25)
-                     .Open(1.0));
-
-            Assert.Equal(0, h.Stats.BlinkCount);
         }
     }
 }

@@ -1,10 +1,10 @@
 using System;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Tests.Support;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Tests.Support;
 using Xunit;
 
-namespace Etus.DetectSample.Tests
+namespace Etoos.DetectSample.Tests
 {
     /// <summary>
     /// 졸음 / 이석 판정. FASMH-94 가 명시한 값(의심 2초, 확정 5초)이 요구사항 원본이다.

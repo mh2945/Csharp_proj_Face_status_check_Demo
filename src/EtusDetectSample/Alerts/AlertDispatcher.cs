@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Etus.DetectSample.Alerts
+namespace Etoos.DetectSample.Alerts
 {
     /// <summary>
     /// 발생한 <see cref="AlertEvent"/> 를 등록된 sink 들로 fan-out 한다.

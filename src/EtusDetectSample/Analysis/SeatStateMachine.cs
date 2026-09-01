@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Analysis
+namespace Etoos.DetectSample.Analysis
 {
     /// <summary>
     /// 프레임 단위 <see cref="EyeDecision"/> 을 시간축 좌석 상태로 바꾸는 상태머신.
@@ -30,15 +30,17 @@ namespace Etus.DetectSample.Analysis
         public const string MsgAwayConfirmed = "학생이 좌석을 옮겼습니다";
         public const string MsgRecovered = "학생이 정상 상태로 돌아왔습니다";
         public const string MsgPerclos = "눈 감김 비율(PERCLOS)이 높습니다";
+        public const string MsgPersonChanged = "인식 대상이 바뀐 것 같습니다";
 
         /// <summary>
         /// 엎드림(slump) 유지 상한 배수.
         /// 상한 = AppSettings.NoFaceConfirmSec * SlumpAwayFallbackMultiplier.
-        /// 기본 설정에서는 5.0 * 3.0 = 15초. 이 시간을 넘도록 얼굴이 안 보이면
+        /// 기본 설정에서는 5.0 * 1.0 = 5초 — 상태 전환 기준을 최대 5초로 통일하기 위해
+        /// NoFaceConfirmSec 과 동일하게 맞춘다. 이 시간을 넘도록 얼굴이 안 보이면
         /// "엎드려 자는 중"이 아니라 "진짜 자리를 비웠다"로 본다.
         /// 절대 시간을 새 임계값으로 박지 않고 기존 임계값의 배수로 유도한다(매직 넘버 금지).
         /// </summary>
-        private const double SlumpAwayFallbackMultiplier = 3.0;
+        private const double SlumpAwayFallbackMultiplier = 1.0;
 
         /// <summary>FPS 평활화용 이동평균 창(프레임 수). 판정 임계값이 아니라 표시용 상수다.</summary>
         private const int FpsWindowFrames = 30;
@@ -72,7 +74,6 @@ namespace Etus.DetectSample.Analysis
         private double _observedSec;      // 리셋 이후 실제로 관측한 시간(PERCLOS 준비 판단용)
         private bool _faceLost;
         private bool _slumpSuspected;
-        private bool _blinkCandidate;
 
         // --- PERCLOS 러닝 합 ---
         private double _perclosClosedSec;
@@ -112,7 +113,7 @@ namespace Etus.DetectSample.Analysis
         public double Perclos { get { return ComputePerclos(); } }
         /// <summary>마지막 리셋 사유. 리셋된 적이 없으면 null.</summary>
         public string LastResetReason { get { return _lastResetReason; } }
-        /// <summary>엎드림 유지 상한(초). = NoFaceConfirmSec * 3.0</summary>
+        /// <summary>엎드림 유지 상한(초). = NoFaceConfirmSec * 1.0 (상태 전환 기준 최대 5초 통일)</summary>
         public double SlumpAwayFallbackSec { get { return _settings.NoFaceConfirmSec * SlumpAwayFallbackMultiplier; } }
 
         /// <summary>프레임 1장을 밀어넣고, 이번 프레임에서 발생한 알림들을 돌려준다.</summary>
@@ -147,9 +148,11 @@ namespace Etus.DetectSample.Analysis
 
             // Face.id 변경 = 다른 사람. 프레임 유실 리셋이 이미 잡혔으면 그 사유를 우선한다.
             // id 가 -1(미검출)인 프레임은 비교 대상에서 제외한다.
+            bool isTrackChange = false;
             if (resetReason == null && _settings.ResetOnTrackIdChange &&
                 obs.FaceTrackId >= 0 && _lastValidTrackId >= 0 && obs.FaceTrackId != _lastValidTrackId)
             {
+                isTrackChange = true;
                 resetReason = string.Format(CultureInfo.InvariantCulture,
                     "Face.id 변경 {0} -> {1}", _lastValidTrackId, obs.FaceTrackId);
             }
@@ -159,6 +162,14 @@ namespace Etus.DetectSample.Analysis
                 ResetInternal(resetReason);
                 // 관측하지 않은(또는 다른 사람의) 시간은 누적 통계에 더하지 않는다.
                 dt = 0.0;
+
+                // 사용자에게 "인식 대상이 바뀐 것 같다"를 알림 목록/사운드로도 알린다.
+                // (기존 TryEmit 의 cooldown/dispatcher 재사용 — 별도 알림 경로를 새로 만들지 않는다)
+                if (isTrackChange)
+                {
+                    TryEmit(alerts, AlertType.PersonChanged, AlertLevel.Warn, MsgPersonChanged,
+                            0.0, obs, eye, stats, now, 0.0);
+                }
             }
 
             if (obs.FaceTrackId >= 0) _lastValidTrackId = obs.FaceTrackId;
@@ -186,7 +197,6 @@ namespace Etus.DetectSample.Analysis
                     // 얼굴 유실 진입 프레임
                     _faceLost = true;
                     _noFaceSec = 0.0;
-                    _blinkCandidate = false;
 
                     // [엎드림 휴리스틱] 사라지기 직전에 이미 눈을 감고 있었다면
                     // 이석이 아니라 책상에 엎드린 것으로 본다. ClosedEyeSec 은 얼린다.
@@ -218,7 +228,6 @@ namespace Etus.DetectSample.Analysis
                 {
                     // 품질 게이트 탈락. ClosedEyeSec / NoFaceSec 을 얼린다(누적 금지).
                     _unknownSec += dt;
-                    _blinkCandidate = false;   // Unknown 이 끼면 blink 시퀀스는 무효
                 }
                 else
                 {
@@ -229,7 +238,6 @@ namespace Etus.DetectSample.Analysis
                         if (_prevEyeState == EyeState.Open)
                         {
                             // Open → Closed : 새 감김 구간 시작
-                            _blinkCandidate = true;
                             _closedEyeSec = 0.0;
                         }
                         _closedEyeSec += dt;
@@ -237,15 +245,6 @@ namespace Etus.DetectSample.Analysis
                     }
                     else // EyeState.Open
                     {
-                        if (_prevEyeState == EyeState.Closed && _blinkCandidate)
-                        {
-                            // Open → Closed → Open 완성. 감김 지속이 blink 범위면 깜빡임으로 센다.
-                            // 범위보다 길면 blink 가 아니라 closure(졸음 신호)이므로 세지 않는다.
-                            double closedMs = _closedEyeSec * 1000.0;
-                            if (closedMs >= _settings.BlinkMinMs && closedMs <= _settings.BlinkMaxMs)
-                                stats.BlinkCount++;
-                        }
-                        _blinkCandidate = false;
                         _closedEyeSec = 0.0;
                         AddPerclosSample(now, dt, false);
                     }
@@ -326,7 +325,6 @@ namespace Etus.DetectSample.Analysis
             snap.UnknownSec = stats.UnknownSec;
             snap.DrowsyCount = stats.DrowsyCount;
             snap.AwayCount = stats.AwayCount;
-            snap.BlinkCount = stats.BlinkCount;
             snap.Fps = CurrentFps();
             snapshot = snap;
 
@@ -360,7 +358,6 @@ namespace Etus.DetectSample.Analysis
             _observedSec = 0.0;
             _faceLost = false;
             _slumpSuspected = false;
-            _blinkCandidate = false;
 
             _perclosWindow.Clear();
             _perclosClosedSec = 0.0;
@@ -504,7 +501,6 @@ namespace Etus.DetectSample.Analysis
             ss.UnknownSec = stats.UnknownSec;
             ss.DrowsyCount = stats.DrowsyCount;
             ss.AwayCount = stats.AwayCount;
-            ss.BlinkCount = stats.BlinkCount;
             e.Session = ss;
 
             sink.Add(e);

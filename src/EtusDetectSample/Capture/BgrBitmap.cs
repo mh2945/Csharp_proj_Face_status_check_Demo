@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace Etus.DetectSample.Capture
+namespace Etoos.DetectSample.Capture
 {
     /// <summary>
     /// BGR byte[] → <see cref="Bitmap"/>(Format24bppRgb) 변환기.

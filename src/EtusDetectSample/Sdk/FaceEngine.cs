@@ -2,10 +2,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Alchera.FaceSDK;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Sdk
+namespace Etoos.DetectSample.Sdk
 {
     /// <summary>FaceSDK 초기화 결과. 실패 사유를 사용자에게 보여줄 수 있는 한국어 문구로 담는다.</summary>
     public sealed class InitResult

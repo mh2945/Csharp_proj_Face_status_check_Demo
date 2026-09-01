@@ -1,6 +1,6 @@
 using System;
 
-namespace Etus.DetectSample.Analysis
+namespace Etoos.DetectSample.Analysis
 {
     /// <summary>
     /// 프레임 1장에 대한 SDK 원시 출력. 판정은 하지 않는다.
@@ -147,7 +147,7 @@ namespace Etus.DetectSample.Analysis
 
         // --- 누적 통계 ---
         public double SeatedSec, StudySec, DrowsySec, AwaySec, UnknownSec;
-        public int DrowsyCount, AwayCount, BlinkCount;
+        public int DrowsyCount, AwayCount;
 
         /// <summary>측정 FPS.</summary>
         public double Fps;

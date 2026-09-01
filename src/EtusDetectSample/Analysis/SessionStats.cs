@@ -1,7 +1,7 @@
 using System;
-using Etus.DetectSample.Config;
+using Etoos.DetectSample.Config;
 
-namespace Etus.DetectSample.Analysis
+namespace Etoos.DetectSample.Analysis
 {
     /// <summary>
     /// 세션 누적 집계. 프레임마다 <see cref="Accumulate"/> 로 시간 조각을 더한다.
@@ -17,7 +17,7 @@ namespace Etus.DetectSample.Analysis
     public sealed class SessionStats
     {
         public double SeatedSec, StudySec, DrowsySec, AwaySec, UnknownSec;
-        public int DrowsyCount, AwayCount, BlinkCount;
+        public int DrowsyCount, AwayCount;
 
         /// <summary>
         /// 이 값을 넘는 deltaSec 은 "실제로 관측하지 않은 시간"으로 보고 버린다.
@@ -78,15 +78,14 @@ namespace Etus.DetectSample.Analysis
             UnknownSec = 0.0;
             DrowsyCount = 0;
             AwayCount = 0;
-            BlinkCount = 0;
         }
 
         public override string ToString()
         {
             return string.Format(System.Globalization.CultureInfo.InvariantCulture,
-                "seated={0:F1}s awake={1:F1}s drowsy={2:F1}s away={3:F1}s unknown={4:F1}s / drowsy={5} away={6} blink={7}",
+                "seated={0:F1}s awake={1:F1}s drowsy={2:F1}s away={3:F1}s unknown={4:F1}s / drowsy={5} away={6}",
                 SeatedSec, StudySec, DrowsySec, AwaySec, UnknownSec,
-                DrowsyCount, AwayCount, BlinkCount);
+                DrowsyCount, AwayCount);
         }
     }
 }

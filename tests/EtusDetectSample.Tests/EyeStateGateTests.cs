@@ -1,10 +1,10 @@
 using System;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
-using Etus.DetectSample.Tests.Support;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
+using Etoos.DetectSample.Tests.Support;
 using Xunit;
 
-namespace Etus.DetectSample.Tests
+namespace Etoos.DetectSample.Tests
 {
     /// <summary>
     /// EyeStateGate — "믿을 수 없는 프레임은 Open/Closed 로 단정하지 않는다"가 유일한 책임.

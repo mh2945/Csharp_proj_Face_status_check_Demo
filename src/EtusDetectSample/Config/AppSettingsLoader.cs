@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Configuration;
 using System.Globalization;
 
-namespace Etus.DetectSample.Config
+namespace Etoos.DetectSample.Config
 {
     /// <summary>
     /// App.config 의 &lt;appSettings&gt; 를 읽어 <see cref="AppSettings"/> 를 만든다.
@@ -79,10 +79,6 @@ namespace Etus.DetectSample.Config
             // --- PERCLOS ---
             s.PerclosWindowSec = ReadDouble(raw, "PerclosWindowSec", s.PerclosWindowSec, warnings);
             s.PerclosSuspectRatio = ReadDouble(raw, "PerclosSuspectRatio", s.PerclosSuspectRatio, warnings);
-
-            // --- Blink ---
-            s.BlinkMinMs = ReadDouble(raw, "BlinkMinMs", s.BlinkMinMs, warnings);
-            s.BlinkMaxMs = ReadDouble(raw, "BlinkMaxMs", s.BlinkMaxMs, warnings);
 
             // --- 엎드림 휴리스틱 ---
             s.EnableSlumpHeuristic = ReadBool(raw, "EnableSlumpHeuristic", s.EnableSlumpHeuristic, warnings);

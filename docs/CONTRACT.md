@@ -92,6 +92,13 @@ AlertDispatcher / FrameCsvLogger / MainForm(BeginInvoke)
 | 4 | FineOcclusion 방향 | **3번과 동일 — 가려질수록 높아진다.** | `fineOccl > FineOcclusionMax` → 가려짐. `UseFineOcclusionGate` 기본 **true** 로 변경됨 |
 | 7 | 분석 입력 해상도 | **720 x 1280 (세로) 이미지 기준으로 진행한다.** 성능 목적 | 아래 파이프라인 참조 |
 
+## 부록 B — 2차 개선 (2026-08-24, 실기 사용성 피드백 반영)
+
+| # | 항목 | 확정 내용 | 코드 영향 |
+|---|---|---|---|
+| 1 | "판정불가" 과다 | 게이트 임계값(LandmarkConfMin/OcclusionMax/FineOcclusionMax/PoseYawMaxDeg/UnknownGraceSec)이 SDK 데모(근접 셀피) 기준을 그대로 물려받아 이 PoC(책상 거리 카메라)에는 과도하게 엄격했다. 기본값을 한 단계 완화하고, 현장에서 재보정할 수 있는 실시간 설정 UI("판정 설정" 버튼)를 추가함 | `Config/AppSettings.cs`, `App.config`, 신규 `SettingsForm.cs` |
+| 2 | FineOcclusion 존치 여부 | "내부적으로 사용법이 불명확하면 제거" 요청이 있었으나 재조사 결과 **죽은 코드가 아님** — `EyeStateGate` 9단계 판정 중 7번째로 실사용 중이고 전용 단위 테스트도 있음. 제거 시 15개+ 파일과 인포데스크 JSON 스키마까지 건드려야 해 유지로 확정 | 코드 변경 없음 |
+
 ### 분석 입력 파이프라인 (신규)
 
 SDK 에 넘기는 버퍼는 캡처 원본이 아니라 **720x1280 세로 이미지**다.

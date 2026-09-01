@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using Etus.DetectSample.Alerts;
-using Etus.DetectSample.Analysis;
-using Etus.DetectSample.Config;
-using Etus.DetectSample.Logging;
-using Etus.DetectSample.Sdk;
-using Etus.DetectSample.Worker;
+using Etoos.DetectSample.Alerts;
+using Etoos.DetectSample.Analysis;
+using Etoos.DetectSample.Config;
+using Etoos.DetectSample.Logging;
+using Etoos.DetectSample.Sdk;
+using Etoos.DetectSample.Worker;
 
-namespace Etus.DetectSample
+namespace Etoos.DetectSample
 {
     /// <summary>
     /// 각 계층을 배선하는 유일한 지점.
@@ -39,9 +39,16 @@ namespace Etus.DetectSample
         readonly AlertDispatcher _dispatcher;
         readonly FrameCsvLogger _frameLog;
         readonly AlertJsonlLogger _alertLog;
+        readonly AlertSnapshotWriter _snapshotWriter;
 
         SeatSnapshot _lastSnapshot;
         bool _disposed;
+
+        // 판정 임계값 튜닝 창. Non-modal 싱글턴 — 감시를 켠 채로 열어 두고 값을 조정한다.
+        SettingsForm _settingsForm;
+
+        /// <summary>증거 스냅샷이 저장되는 폴더. 스냅샷 뷰어를 열 때 쓴다.</summary>
+        public string SnapshotDirectory { get { return _snapshotWriter.Directory; } }
 
         public AppController(MainForm form)
         {
@@ -57,16 +64,19 @@ namespace Etus.DetectSample
 
             _frameLog = new FrameCsvLogger(_settings, OnComponentError);
             _alertLog = new AlertJsonlLogger(_settings, OnComponentError);
+            _snapshotWriter = new AlertSnapshotWriter(_settings, OnComponentError);
 
             _dispatcher = new AlertDispatcher(OnComponentError);
             _dispatcher.AddSink("jsonl", _alertLog.Write);
             _dispatcher.AddConsoleSink();
             _dispatcher.AddUiSink(PushAlertToUi);
 
-            // 상태머신이 카운터를 리셋할 때마다 CSV 로 남긴다.
+            // 상태머신이 카운터를 리셋할 때마다 사유를 상태바에 정보로 남긴다(오류 아님).
+            // "세션 시작"처럼 정상적인 리셋까지 빨간 오류 배너로 보이면 안 되므로 OnComponentError 와
+            // 분리했다 — 진짜 컴포넌트 오류(로거/디스패처/스냅샷 저장 실패)만 그쪽으로 간다.
             // Face.id 가 실제로 얼마나 자주 튀는지는 Windows 실기에서만 알 수 있고,
             // 너무 잦으면 ResetOnTrackIdChange 를 꺼야 한다(README 참조).
-            _machine.ResetLogger = OnComponentError;
+            _machine.ResetLogger = OnResetInfo;
 
             // 기본 생성자가 App.config 의 EnableLandmark106 을 반영한다.
             // 여기서 CaptureLandmarks 를 덮어쓰면 그 설정 키가 무력화되므로 건드리지 않는다.
@@ -75,10 +85,13 @@ namespace Etus.DetectSample
             _worker = new AnalysisWorker(_settings, _engine, OnFrame, OnWorkerError);
             _worker.EngineInitialized = OnEngineInitialized;
             _worker.CameraOpened = OnCameraOpened;
+            _worker.Progress = OnProgress;
 
             _form.StartRequested += OnStartRequested;
             _form.StopRequested += OnStopRequested;
             _form.CameraSelected += OnCameraSelected;
+            _form.SnapshotsRequested += OnSnapshotsRequested;
+            _form.SettingsRequested += OnSettingsRequested;
             _form.FormClosing += OnFormClosing;
 
             foreach (string w in warnings)
@@ -136,6 +149,36 @@ namespace Etus.DetectSample
             _worker.SetCameraIndex(index);
         }
 
+        /// <summary>
+        /// 증거 스냅샷 폴더를 탐색기로 연다. jpg 파일명에 시각/유형/레벨이 이미 인코딩돼 있으므로
+        /// 탐색기 미리보기/정렬만으로 별도 뷰어 없이 확인할 수 있다("Simple is Best").
+        /// </summary>
+        void OnSnapshotsRequested(object sender, EventArgs e)
+        {
+            try
+            {
+                LogPaths.EnsureDirectory(SnapshotDirectory);
+                System.Diagnostics.Process.Start("explorer.exe", "\"" + SnapshotDirectory + "\"");
+            }
+            catch (Exception ex)
+            {
+                _form.SetError("스냅샷 폴더를 열지 못했습니다: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// "판정불가" 게이트 임계값을 감시 중에도 실시간으로 조정할 수 있는 창을 연다.
+        /// Non-modal 싱글턴 — 이미 열려 있으면 앞으로 가져오기만 한다.
+        /// </summary>
+        void OnSettingsRequested(object sender, EventArgs e)
+        {
+            if (_settingsForm == null || _settingsForm.IsDisposed)
+                _settingsForm = new SettingsForm(_settings, OnComponentError);
+
+            _settingsForm.Show();
+            _settingsForm.BringToFront();
+        }
+
         //
         // 워커 → 판정 → UI  (전부 워커 스레드)
         //
@@ -157,7 +200,14 @@ namespace Etus.DetectSample
             _form.PushSnapshot(snap, preview);
 
             if (alerts != null && alerts.Count > 0)
+            {
                 _dispatcher.Dispatch(alerts);
+
+                // 확정(Alert) 알림의 증거 스냅샷을 남긴다. preview 는 이 콜백 안에서만 유효하므로
+                // (워커가 프레임마다 재사용하는 버퍼) 반드시 여기서 동기적으로 저장한다.
+                for (int i = 0; i < alerts.Count; i++)
+                    _snapshotWriter.Write(alerts[i], preview);
+            }
         }
 
         void PushAlertToUi(AlertEvent e)
@@ -192,6 +242,11 @@ namespace Etus.DetectSample
             _form.SetEngineInfo(summary);
         }
 
+        void OnProgress(string message)
+        {
+            _form.SetProgress(message);
+        }
+
         void OnWorkerError(string message)
         {
             _form.SetError(message);
@@ -199,8 +254,14 @@ namespace Etus.DetectSample
 
         void OnComponentError(string message)
         {
-            // 로거/디스패처/상태머신의 비치명적 사건. 앱을 멈추지 않는다.
+            // 로거/디스패처/스냅샷 저장 등 컴포넌트의 비치명적 오류. 앱을 멈추지 않는다.
             _form.SetError(message);
+        }
+
+        void OnResetInfo(string reason)
+        {
+            // 상태머신 카운터 리셋 사유(세션 시작, Face.id 변경, 프레임 유실 등). 오류가 아니다.
+            _form.SetInfo(reason);
         }
 
         //
@@ -266,6 +327,7 @@ namespace Etus.DetectSample
             try { _worker.Dispose(); } catch (Exception) { }
             try { _engine.Dispose(); } catch (Exception) { }
             try { _frameLog.Dispose(); } catch (Exception) { }
+            try { if (_settingsForm != null) _settingsForm.Dispose(); } catch (Exception) { }
         }
     }
 }
